@@ -1,0 +1,360 @@
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk
+import pytesseract
+from pytesseract import Output
+import cv2
+import speech_recognition as sr
+import pyautogui as auto
+import pyttsx3
+import time
+import gspread
+import pyperclip
+from oauth2client.service_account import ServiceAccountCredentials
+from difflib import SequenceMatcher as SM
+from PIL import Image
+import ctypes
+import win32api
+import win32con
+import atexit
+def update_clock():
+    current_time = time.strftime("%H:%M:%S")
+    current_date = time.strftime("%Y-%m-%d")
+    clock.config(text=f"Hora: {current_time}\nFecha: {current_date}")
+    clock.after(1000, update_clock)
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+client = gspread.authorize(creds)
+sheet = client.open_by_url('https://docs.google.com/spreadsheets/d/1RxxZPpm4cnJAzjLWnN38SN4Q57hJNY2bHk0w3Gd-sB0/edit?usp=sharing')
+hoja = sheet.worksheet("Provedor Valero")
+hoja3 = sheet.worksheet("Provedor Variado")
+def copy_clipboard():
+    auto.hotkey('Ctrl', 'c')
+    time.sleep(.01)  # ctrl-c is usually very fast but your program may execute faster
+    return pyperclip.paste()
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+recognizer = sr.Recognizer()
+microphone = sr.Microphone(device_index = 0)
+eng = pyttsx3.init()
+eng.setProperty("rate", 140)
+eng.setProperty("volume", 1.0)
+listVoices = eng.getProperty("voices")
+eng.setProperty("voice", listVoices[2].id)
+def on_testado_button_clicked():
+    eng.say("Reconocimiento de pantalla activado")
+    eng.runAndWait()
+    palabra = "Editar"
+    img = auto.screenshot()
+    d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+    n_boxes = len(d["level"])
+    for i in range(n_boxes):
+        x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+        if text != "" or text !=" " or text != "  "or text !="    ":
+            print((i+1), "x: ",x , "Y ", y, " Text", text)
+        similitud = SM(None, text, palabra).ratio()
+        if similitud >0.7:
+            auto.moveTo(x,y)
+            auto.click()
+            time.sleep(2)
+    auto.moveTo(1297, 233)
+    auto.mouseDown()
+    auto.moveTo(1453,233)
+    auto.mouseUp()
+    NumFact = copy_clipboard()
+    try:
+    
+        lol = hoja.find(NumFact)
+        time.sleep(0.5)
+        clienteMayus = hoja.cell(lol.row, 65).value
+        if clienteMayus == "PENDIENTE DEFINIR" or "Razon Social":
+            if(clienteMayus=="Razon Social"):
+                eng.say("No se ha seleccionado nada, por favor abra el documento antes de ejecutar o haga visible el número de factura")
+                eng.runAndWait()
+            else:
+                eng.say("Valero en carpeta bol")
+                eng.runAndWait()
+        else:
+            palabra = "letra:"
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, palabra).ratio()
+                if similitud >0.7:
+                    auto.moveTo(x+40,y)
+                    auto.mouseDown()
+                    auto.moveTo(x+1080, y)
+                    auto.mouseUp()
+                    auto.press("delete")
+                    time.sleep(1)
+            palabra = "letra:"
+            palabra2 = "TRASLADO"
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, palabra2).ratio()
+                if similitud >0.7:
+                    auto.moveTo(x+130,y)
+                    auto.mouseDown()
+                    auto.moveTo(x+210, y)
+                    auto.mouseUp()
+                    auto.press("delete")
+                    auto.moveTo(x+490,y)
+                    auto.mouseDown()
+                    auto.moveTo(x+540, y)
+                    auto.mouseUp()
+                    auto.press("delete")
+                    auto.moveTo(x+555, y)
+                    auto.mouseDown()
+                    auto.moveTo(x+650, y)
+                    auto.mouseUp()
+                    auto.press("delete")
+                    time.sleep(1)
+            palabra4 = "Subtotal"
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, palabra4).ratio()
+                if similitud >0.7:
+                    auto.moveTo(x+60,y+30)
+                    auto.click()
+                    auto.press("right")
+                    auto.press("right")
+                    auto.press("right")
+                    auto.press("backspace")
+                    auto.press("backspace")
+                    auto.press("backspace")
+                    auto.press("backspace")
+                    auto.press("backspace")
+                    auto.press("backspace")
+                    auto.moveTo(x-460,y+30)
+                    auto.mouseDown()
+                    auto.moveTo(x-365,y+30)
+                    auto.mouseUp()
+                    auto.press("delete")
+                    time.sleep(1)
+            palabra5 = "cambio"
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, palabra5).ratio()
+                if similitud >0.7:
+                    auto.moveTo(x+90,y+25)
+                    auto.mouseDown()
+                    auto.moveTo(x+250, y -100)
+                    auto.mouseUp()
+                    time.sleep(0.1)
+                    auto.press("delete")
+                    time.sleep(1)
+            palabra6 = "Unitario"
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, palabra6).ratio()
+                if similitud >0.7:
+                    auto.moveTo(x+340,y + 100)
+                    auto.mouseDown()
+                    auto.moveTo(x-50 , y + 20)
+                    auto.mouseUp()
+                    auto.press("delete")
+                    time.sleep(1)
+            auto.moveTo(1052, 153)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(1094, 190)
+            auto.click()
+            time.sleep(5)
+            auto.moveTo(671, 244)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(721, 296)
+            time.sleep(1)
+            auto.typewrite("P")
+            auto.press("enter")
+            time.sleep(1)
+            auto.moveTo(723, 302)
+            auto.click()
+            auto.press("space")
+            time.sleep(0.5)
+            auto.write(clienteMayus)
+            time.sleep(1)
+            auto.moveTo(1113, 815)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(1056, 603)
+            auto.click()
+            auto.sleep(1)
+###########AGREGAR MARCA DE AGUA#############################
+            auto.moveTo(1052, 153)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(1094, 190)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(1086, 607)
+            auto.click()
+            time.sleep(3)
+            auto.moveTo(671, 244)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(721, 296)
+            time.sleep(1)
+            auto.typewrite("L")
+            auto.typewrite("L")
+            auto.typewrite("L")
+            auto.press("enter")
+            time.sleep(1)
+            auto.moveTo(1113, 815)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(1056, 603)
+            auto.click()
+            auto.sleep(3)
+#####EXPORTAR COMO IMAGEN############
+            auto.moveTo(1893, 331)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(957, 543)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(946, 741)
+            auto.click()
+            time.sleep(2)
+            auto.moveTo(365, 443)
+            auto.click()
+            auto.typewrite("-2")
+            time.sleep(1)
+            auto.moveTo(67, 188)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(777, 588)
+            auto.click()
+            time.sleep(10)
+            auto.moveTo(1883, 7)
+            auto.click()
+            time.sleep(1)
+            auto.moveTo(1046, 579)
+            auto.click()
+
+    except:
+        if len(NumFact) == 0 or not NumFact.isdigit():
+            eng.say("No se ha seleccionado nada, por favor abra el documento antes de ejecutar el programa o ajuste su pantalla")
+            eng.runAndWait()
+        else:
+            eng.say("VALERO NO REGISTRADA EN BITÁCORA. AVISAR A FACTURACIÓN")
+            eng.runAndWait();
+            b=0;
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, " Archivo").ratio()
+                if similitud >0.7 and b==0:
+                    auto.moveTo(x,y)
+                    auto.click()
+                    time.sleep(2)
+                    b=b+1
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"])
+            b=0;
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, "Guardar").ratio()
+                if similitud >0.7 and b==0:
+                    auto.moveTo(x,y);
+                    auto.click();
+                    time.sleep(1.2);
+                    auto.press("right")
+                    time.sleep(0.3)
+                    auto.typewrite("-NO REGISTRADA")
+                    b=1;
+            img = auto.screenshot()
+            d = pytesseract.image_to_data(img, lang="spa",output_type = Output.DICT)
+            n_boxes = len(d["level"]);
+            b=0
+            for i in range(n_boxes):
+                x , y , text = (d["left"][i], d["top"][i], d["text"][i])
+                if text != "" or text !=" " or text != "  "or text !="    ":
+                    print((i+1), "x: ",x , "Y ", y, " Text", text)
+                similitud = SM(None, text, "Guardar").ratio()
+                if similitud >0.7 and b<=1:
+                    if b ==0:
+                        b=b+1
+                else:
+                    auto.moveTo(x,y)
+                    auto.click()
+
+def on_facturacion_button_clicked():
+    print("Botón Facturación ha sido presionado")
+root = tk.Tk()
+wtotal = root.winfo_screenwidth()
+htotal = root.winfo_screenheight()
+wventana = 900
+hventana = 550
+pwidth = round(wtotal/2-wventana/2)
+pheight = round(htotal/2-hventana/2)
+root.geometry(str(wventana)+"x"+str(hventana)+"+"+str(pwidth)+"+"+str(pheight))
+root.resizable(0,0)
+root.title("Departamento de Facturación Petrolíferos Lobo")
+logo =Image.open("lobito.jpg")
+icono = ImageTk.PhotoImage(logo)
+root.iconphoto(True, icono)
+def on_exit_button_clicked():
+    root.destroy()
+image_quit = Image.open("Quit.png")
+photo_quit = ImageTk.PhotoImage(image_quit.resize((45,45)))
+exit_button = ttk.Button(root, image=photo_quit, compound="bottom", command=on_exit_button_clicked)
+
+
+# Cargamos las imágenes
+image_documento = Image.open("Testado.png")
+photo_documento = ImageTk.PhotoImage(image_documento.resize((80,80)))
+
+image_billete = Image.open("Facturación.png")
+photo_billete = ImageTk.PhotoImage(image_billete.resize((80,80)))
+
+# Creamos los botones con sus imágenes y etiquetas
+
+testado_button = ttk.Button(root, text="Testado",  compound="top",image=photo_documento, command=on_testado_button_clicked)
+
+facturacion_button = ttk.Button(root, text="Facturación",compound="top", image=photo_billete, command=on_facturacion_button_clicked)
+
+# Guardamos una referencia a las imágenes
+testado_button.image = photo_documento
+facturacion_button.image = photo_billete
+
+# Posicionamos los botones en la ventana
+testado_button.pack()
+facturacion_button.pack()
+exit_button.pack()
+testado_button.place(x=150,y=50, width=300, height = 450)
+facturacion_button.place(x=480,y=50, width=300, height =450)
+exit_button.place(x=850,y=500, width=50, height = 55)
+
+
+root.mainloop()
